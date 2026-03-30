@@ -12,7 +12,14 @@ const PRIZES = [
   'Riprova'
 ];
 
-export default function Wheel() {
+const PRIZE_POINTS = {
+  'Caffè Omaggio': 30,
+  'Sconto 10%': 50,
+  'Amaro Omaggio': 80,
+  'Riprova': 0
+};
+
+export default function Wheel({ onWin }) {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -26,19 +33,15 @@ export default function Wheel() {
 
     const totalSlices = PRIZES.length;
     const sliceAngle = 360 / totalSlices;
-    const baseSpins = 5 * 360; // 5 full rotations
+    const baseSpins = 5 * 360; 
 
-    // Pick random prize
     const prizeIndex = Math.floor(Math.random() * totalSlices);
-    
-    // Calculate target angle to bring chosen slice to top (0 deg)
     const targetAngle = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-
-    // Random realistic offset within the slice
+    
+    // Add realistic offset to center
     const maxOffset = (sliceAngle / 2) - 2;
     const randomOffset = (Math.random() * maxOffset * 2) - maxOffset;
 
-    // Add to current rotation (strip modulo to keep rotating forward cleanly)
     const currentBase = rotation - (rotation % 360);
     const finalRotation = currentBase + baseSpins + targetAngle + randomOffset;
 
@@ -46,14 +49,20 @@ export default function Wheel() {
 
     setTimeout(() => {
       setIsSpinning(false);
-      setWonPrize(PRIZES[prizeIndex]);
-      if (PRIZES[prizeIndex] === 'Riprova') {
-        setWinMessage('Peccato, andrà meglio la prossima volta!');
+      const wonPrizeStr = PRIZES[prizeIndex];
+      setWonPrize(wonPrizeStr);
+      
+      if (wonPrizeStr === 'Riprova') {
+        setWinMessage('Peccato, non hai vinto punti. Riprova domani!');
       } else {
-        setWinMessage(`🎉 Hai vinto: ${PRIZES[prizeIndex]}!`);
+        const pnt = PRIZE_POINTS[wonPrizeStr];
+        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! E in più hai guadagnato ${pnt} Punti!`);
+        if (onWin && pnt > 0) {
+          onWin(pnt);
+        }
       }
       setShowModal(true);
-    }, 4000);
+    }, 4000); // the exact transition animation speed
   };
 
   const closeModal = () => {
@@ -81,14 +90,12 @@ export default function Wheel() {
               
               return (
                 <g key={i} transform={`rotate(${rotateAngle} 200 200)`}>
-                  {/* Slice Wedge (45 deg angle exactly) */}
                   <path 
                     d="M 200 200 L 200 0 A 200 200 0 0 1 341.42 58.58 Z" 
                     fill={isGold ? "url(#gold-grad)" : "#18181b"} 
                     stroke="#27272a" 
                     strokeWidth="2" 
                   />
-                  {/* Tangential Text Rotation */}
                   <g transform="translate(200, 200) rotate(22.5)">
                     <text 
                       x="0" y="-120" 
@@ -117,7 +124,6 @@ export default function Wheel() {
         </button>
       </div>
 
-      {/* Modern Pop-up Modal */}
       <div className={`modal-overlay ${showModal ? 'show' : ''}`}>
         <div className="modal-content">
           <div className="modal-title">{wonPrize === 'Riprova' ? 'Peccato!' : 'Vittoria!'}</div>
@@ -127,7 +133,7 @@ export default function Wheel() {
             <button className="modal-btn close-only" onClick={closeModal}>Chiudi</button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="modal-btn" onClick={closeModal}>Riscatta Ora</button>
+              <button className="modal-btn" onClick={closeModal}>Riscatta Ora (Appena sincronizzato)</button>
               <button className="modal-btn close-only" style={{ background: 'transparent', color: '#888', padding: '8px', boxShadow: 'none', border: 'none' }} onClick={closeModal}>Più tardi</button>
             </div>
           )}
