@@ -3,7 +3,7 @@ import './App.css';
 import Wheel from './Wheel';
 import Login from './Login';
 
-const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/ristoloyalty/v1';
+const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
 
 function App() {
   const [user, setUser] = useState(null);
