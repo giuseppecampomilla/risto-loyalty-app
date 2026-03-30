@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Wheel from './Wheel';
+import Login from './Login';
 
 function App() {
-  const [user, setUser] = useState({
-    nome: 'Giuseppe',
-    punti: 150,
-    livello: 'Silver'
-  });
-  
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
 
   const [rewards, setRewards] = useState([
@@ -16,13 +12,32 @@ function App() {
     { id: 2, name: 'Sconto 10% 🎫', date: 'Ieri', code: 'SCN10A' },
   ]);
 
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('ristoLoyaltyUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem('ristoLoyaltyUser', JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('ristoLoyaltyUser');
+    setUser(null);
+    setActiveTab('home');
+  };
+
+  // Se l'utente non è loggato, mostra la schermata di Login
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   const targetPoints = 500;
   const progressPercent = Math.min((user.punti / targetPoints) * 100, 100);
-
-  // Per ora simuliamo l'aggiunta di punti per test
-  const handleSimulatePoints = () => {
-    setUser(prev => ({ ...prev, punti: prev.punti + 50 }));
-  };
 
   return (
     <div className="loyalty-app">
@@ -102,10 +117,26 @@ function App() {
 
           {activeTab === 'profilo' && (
             <div className="card-glass center-content">
-               <div className="avatar" style={{width:'80px', height:'80px', fontSize:'2rem', marginBottom:'1rem'}}>{user.nome.charAt(0)}</div>
+               <div className="avatar" style={{width:'80px', height:'80px', fontSize:'2.5rem', marginBottom:'1rem'}}>{user.nome.charAt(0)}</div>
                <h2>{user.nome}</h2>
                <p style={{marginTop: '0.5rem', color: '#a1a1aa'}}>{user.punti} Punti Totali • Livello {user.livello}</p>
-               <p style={{marginTop: '2rem', color: '#555', fontSize: '0.85rem'}}>Impostazioni e storico completo in arrivo...</p>
+               <p style={{marginTop: '1rem', color: '#555', fontSize: '0.9rem'}}>{user.email}</p>
+               
+               <button 
+                 className="btn-spin" 
+                 onClick={handleLogout} 
+                 style={{
+                   marginTop: '2rem', 
+                   padding: '12px 24px', 
+                   fontSize: '0.9rem', 
+                   background: 'transparent', 
+                   border: '1px solid rgba(255,255,255,0.2)', 
+                   color: '#fafafa', 
+                   boxShadow: 'none'
+                 }}
+               >
+                  LOGOUT
+               </button>
             </div>
           )}
         </main>
