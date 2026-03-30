@@ -78,12 +78,20 @@ function App() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('🔗 Risposta Server a /add-points/:', data);
+        
         if (data.success) {
+          console.log('✅ SUCCESSO! Punti aggiornati nel database WordPress.');
           setUser(prev => ({ ...prev, punti: data.punti }));
+        } else {
+          console.error('❌ ERRORE Server:', data.message || data.code);
         }
+      } else {
+         const errorData = await response.json().catch(() => ({}));
+         console.error(`🚨 ERRORE HTTP ${response.status}: Il server ha respinto la richiesta.`, errorData);
       }
     } catch (err) {
-      console.error("Errore salvataggio vincita", err);
+      console.error("❌ ERRORE FETCH (Problema di Connessione o CORS):", err);
     } finally {
       // Re-fetch everything to ensure rewards list is up to date (if the backend adds it to rewards)
       await fetchUserData(user.email);
