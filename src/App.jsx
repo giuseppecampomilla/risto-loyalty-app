@@ -175,7 +175,18 @@ function App() {
 
           {activeTab === 'ruota' && (
             <div className="card-glass center-content" style={{ padding: '20px 10px' }}>
-               <Wheel onWin={handleWheelWin} />
+               <Wheel 
+                 onWin={handleWheelWin} 
+                 onGoToWallet={() => {
+                   setActiveTab('home');
+                   setTimeout(() => {
+                     const walletEl = document.getElementById('wallet-section');
+                     if (walletEl) {
+                       walletEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }
+                   }, 150);
+                 }}
+               />
             </div>
           )}
 

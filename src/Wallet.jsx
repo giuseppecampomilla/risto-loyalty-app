@@ -62,7 +62,7 @@ export default function Wallet({ email, rewards, onRedeemSuccess }) {
   };
 
   return (
-    <div className="rewards-section">
+    <div className="rewards-section" id="wallet-section">
       <div className="rewards-header">
         <h3 className="section-title">I Miei Premi</h3>
       </div>
