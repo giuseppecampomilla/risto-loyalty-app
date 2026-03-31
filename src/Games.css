@@ -1,0 +1,108 @@
+/* GAMES STYLING */
+
+/* Scratch Card */
+.scratch-card-box {
+  width: 300px;
+  height: 150px;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #18181b;
+}
+
+.scratch-prize-reveal {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, #27272a, #09090b);
+  z-index: 1;
+  padding: 10px;
+}
+
+.scratch-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 2;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Slot Machine */
+.slot-machine-box {
+  padding: 1.5rem;
+  background: linear-gradient(to bottom, #27272a, #18181b);
+  border: 4px solid #3f3f46;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 2px 10px rgba(255,255,255,0.1);
+}
+
+.reels-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.reel {
+  width: 80px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  background: #fafafa;
+  color: #000;
+  border-radius: 8px;
+  box-shadow: inset 0 5px 15px rgba(0,0,0,0.3);
+  border: 2px solid #52525b;
+  overflow: hidden;
+}
+
+.reel.spinning {
+  animation: reelSpin 0.1s linear infinite;
+  filter: blur(1px);
+}
+
+@keyframes reelSpin {
+  0% { transform: translateY(-5px); }
+  50% { transform: translateY(5px); }
+  100% { transform: translateY(-5px); }
+}
+
+/* Game Selection in Home */
+.game-selection-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.game-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fbbf24;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+}
+
+.game-icon {
+  font-size: 1.8rem;
+}

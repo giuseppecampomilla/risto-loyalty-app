@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Wheel from './Wheel';
+import ScratchCard from './ScratchCard';
+import SlotMachine from './SlotMachine';
 import Login from './Login';
 import Wallet from './Wallet';
 import Leaderboard from './Leaderboard';
@@ -10,6 +12,7 @@ const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
 function App() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
+  const [activeGame, setActiveGame] = useState('wheel');
   const [isLoading, setIsLoading] = useState(true);
   const [rewards, setRewards] = useState([]);
   const [leaderboardTrigger, setLeaderboardTrigger] = useState(0);
@@ -170,11 +173,19 @@ function App() {
           {activeTab === 'home' && (
             <>
               <div className="card-glass center-content" style={{marginBottom: '2rem'}}>
-                <h2 className="section-title">Premi Sempre Più Vicini</h2>
-                <p className="section-subtitle">Continua a guadagnare punti e sblocca ricompense esclusive.</p>
-                <button className="btn-spin" onClick={() => setActiveTab('ruota')}>
-                  GIRA LA RUOTA
-                </button>
+                <h2 className="section-title">Scegli il tuo gioco</h2>
+                <p className="section-subtitle">Vinci premi esclusivi o raccogli punti fedeltà in tempo reale.</p>
+                <div className="game-selection-grid">
+                  <button className="game-btn" onClick={() => { setActiveGame('wheel'); setActiveTab('ruota'); }}>
+                    <span className="game-icon">🎡</span> Ruota Fortunata
+                  </button>
+                  <button className="game-btn" onClick={() => { setActiveGame('scratch'); setActiveTab('ruota'); }}>
+                    <span className="game-icon">🎟️</span> Gratta e Vinci
+                  </button>
+                  <button className="game-btn" onClick={() => { setActiveGame('slot'); setActiveTab('ruota'); }}>
+                    <span className="game-icon">🎰</span> Slot Machine
+                  </button>
+                </div>
               </div>
 
               <Wallet email={user.email} rewards={rewards} onRedeemSuccess={removeReward} />
@@ -183,18 +194,42 @@ function App() {
 
           {activeTab === 'ruota' && (
             <div className="card-glass center-content" style={{ padding: '20px 10px' }}>
-               <Wheel 
-                 onWin={handleWheelWin} 
-                 onGoToWallet={() => {
-                   setActiveTab('home');
-                   setTimeout(() => {
-                     const walletEl = document.getElementById('wallet-section');
-                     if (walletEl) {
-                       walletEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                     }
-                   }, 150);
-                 }}
-               />
+               {activeGame === 'wheel' && (
+                 <Wheel 
+                   onWin={handleWheelWin} 
+                   onGoToWallet={() => {
+                     setActiveTab('home');
+                     setTimeout(() => {
+                       const walletEl = document.getElementById('wallet-section');
+                       if (walletEl) walletEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }, 150);
+                   }}
+                 />
+               )}
+               {activeGame === 'scratch' && (
+                 <ScratchCard 
+                   onWin={handleWheelWin} 
+                   onGoToWallet={() => {
+                     setActiveTab('home');
+                     setTimeout(() => {
+                       const walletEl = document.getElementById('wallet-section');
+                       if (walletEl) walletEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }, 150);
+                   }}
+                 />
+               )}
+               {activeGame === 'slot' && (
+                 <SlotMachine 
+                   onWin={handleWheelWin} 
+                   onGoToWallet={() => {
+                     setActiveTab('home');
+                     setTimeout(() => {
+                       const walletEl = document.getElementById('wallet-section');
+                       if (walletEl) walletEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }, 150);
+                   }}
+                 />
+               )}
             </div>
           )}
 
@@ -250,8 +285,8 @@ function App() {
           className={`nav-item center-nav-action ${activeTab === 'ruota' ? 'active' : ''}`}
           onClick={() => setActiveTab('ruota')}
         >
-          <div className="nav-icon-floating">🎡</div>
-          <span className="nav-label">Ruota</span>
+          <div className="nav-icon-floating">🎲</div>
+          <span className="nav-label">Gioca</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'profilo' ? 'active' : ''}`}
