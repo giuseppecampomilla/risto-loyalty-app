@@ -12,12 +12,7 @@ const PRIZES = [
   'Riprova'
 ];
 
-const PRIZE_POINTS = {
-  'Caffè Omaggio': 30,
-  'Sconto 10%': 50,
-  'Amaro Omaggio': 80,
-  'Riprova': 0
-};
+
 
 export default function Wheel({ onWin }) {
   const [rotation, setRotation] = useState(0);
@@ -51,14 +46,15 @@ export default function Wheel({ onWin }) {
       setIsSpinning(false);
       const wonPrizeStr = PRIZES[prizeIndex];
       setWonPrize(wonPrizeStr);
-      
       if (wonPrizeStr === 'Riprova') {
-        setWinMessage('Peccato, non hai vinto punti. Riprova domani!');
+        setWinMessage('Hai comunque guadagnato 10 Punti Fedeltà per aver giocato!');
+        if (onWin) {
+          onWin(10, null);
+        }
       } else {
-        const pnt = PRIZE_POINTS[wonPrizeStr];
-        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! E in più hai guadagnato ${pnt} Punti!`);
-        if (onWin && pnt > 0) {
-          onWin(pnt);
+        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
+        if (onWin) {
+          onWin(10, wonPrizeStr);
         }
       }
       setShowModal(true);
@@ -133,7 +129,7 @@ export default function Wheel({ onWin }) {
             <button className="modal-btn close-only" onClick={closeModal}>Chiudi</button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="modal-btn" onClick={closeModal}>Riscatta Ora (Appena sincronizzato)</button>
+              <button className="modal-btn" onClick={closeModal}>Vai al Wallet</button>
               <button className="modal-btn close-only" style={{ background: 'transparent', color: '#888', padding: '8px', boxShadow: 'none', border: 'none' }} onClick={closeModal}>Più tardi</button>
             </div>
           )}

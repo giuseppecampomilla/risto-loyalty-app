@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import './App.css';
 import Wheel from './Wheel';
 import Login from './Login';
+import Wallet from './Wallet';
 
 const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
 
@@ -61,40 +61,46 @@ function App() {
     setActiveTab('home');
   };
 
-  const handleWheelWin = async (wonPoints) => {
+  const handleWheelWin = async (wonPoints, premio) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/add-points/`, {
+      const response = await fetch(`${API_BASE_URL}/process-win/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-risto-secret': '1234' // N.B. In produzione va usato il vero PIN Cameriere!
         },
         body: JSON.stringify({
           email: user.email,
-          points: wonPoints
+          points: wonPoints,
+          premio_fisico: premio,
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('🔗 Risposta Server a /add-points/:', data);
         
         if (data.success) {
-          console.log('✅ SUCCESSO! Punti aggiornati nel database WordPress.');
           setUser(prev => ({ ...prev, punti: data.punti }));
         } else {
           console.error('❌ ERRORE Server:', data.message || data.code);
         }
-      } else {
-         const errorData = await response.json().catch(() => ({}));
-         console.error(`🚨 ERRORE HTTP ${response.status}: Il server ha respinto la richiesta.`, errorData);
       }
     } catch (err) {
-      console.error("❌ ERRORE FETCH (Problema di Connessione o CORS):", err);
+      console.error("❌ ERRORE FETCH:", err);
     } finally {
-      // Re-fetch everything to ensure rewards list is up to date (if the backend adds it to rewards)
       await fetchUserData(user.email);
+    }
+  };
+
+  const removeReward = (codice) => {
+    const el = document.getElementById(`reward-${codice}`);
+    if (el) {
+      el.classList.add('removing');
+      setTimeout(() => {
+        setRewards(prev => prev.filter(r => r.codice_univoco !== codice));
+      }, 400);
+    } else {
+      setRewards(prev => prev.filter(r => r.codice_univoco !== codice));
     }
   };
 
@@ -162,31 +168,7 @@ function App() {
                 </button>
               </div>
 
-              <div className="rewards-section">
-                <div className="rewards-header">
-                  <h3 className="section-title">Premi Da Ritirare</h3>
-                  <a href="#" className="see-all">Vedi tutti</a>
-                </div>
-                
-                <div className="rewards-list">
-                  {rewards.length === 0 ? (
-                    <p style={{color: '#a1a1aa', fontSize: '0.9rem'}}>Nessun premio in sospeso. Gira la ruota per vincere!</p>
-                  ) : (
-                    rewards.map((reward, idx) => (
-                      <div key={reward.codice_univoco || idx} className="reward-item card-glass">
-                        <div className="reward-icon">🎁</div>
-                        <div className="reward-details">
-                          <h4 className="reward-name">{reward.premio}</h4>
-                          <span className="reward-date">{reward.data_vincita}</span>
-                        </div>
-                        <div className="reward-code">
-                          <span>{reward.codice_univoco}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <Wallet email={user.email} rewards={rewards} onRedeemSuccess={removeReward} />
             </>
           )}
 
