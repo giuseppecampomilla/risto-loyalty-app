@@ -1,0 +1,74 @@
+import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
+
+export default function Leaderboard({ currentUser, refreshTrigger }) {
+  const [leaders, setLeaders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/leaderboard/`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setLeaders(data.leaderboard);
+          }
+        }
+      } catch (e) {
+        console.error("Errore fetch Classifica:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, [refreshTrigger]);
+
+  return (
+    <div className="leaderboard-container">
+      <div className="center-content" style={{marginBottom: '1.5rem'}}>
+        <h2 className="section-title">Top 10 Fedeltà 🏆</h2>
+        <p className="section-subtitle" style={{ color: '#a1a1aa', fontSize: '0.9rem' }}>Scopri chi ha guadagnato più punti finora!</p>
+      </div>
+      
+      {isLoading ? (
+        <div style={{ textAlign: 'center', padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <div className="spinner-small"></div>
+        </div>
+      ) : (
+        <div className="leaderboard-list">
+          {leaders.length === 0 ? (
+             <p style={{ textAlign: 'center', color: '#a1a1aa' }}>Nessun giocatore in classifica.</p>
+          ) : (
+            leaders.map((user, index) => {
+              let icon = '';
+              if (index === 0) icon = '🥇';
+              else if (index === 1) icon = '🥈';
+              else if (index === 2) icon = '🥉';
+
+              // Usiamo il nome per evidenziare l'utente loggato
+              const isMe = currentUser && (user.nome === currentUser.nome);
+              
+              return (
+                <div key={index} className={`leaderboard-item card-glass ${isMe ? 'highlight-me' : ''}`}>
+                  <div className="rank">
+                    {icon ? <span className="rank-icon" style={{fontSize: '1.4rem'}}>{icon}</span> : <span className="rank-number">{index + 1}°</span>}
+                  </div>
+                  <div className="name-box">
+                    <span className="name" style={{fontWeight: 600}}>{user.nome}</span>
+                    {isMe && <span className="badge-me">Tu</span>}
+                  </div>
+                  <div className="points-box">
+                    <span className="points" style={{ color: '#fbbf24', fontWeight: 800 }}>{user.punti_totali}</span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '2px' }}>pt</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

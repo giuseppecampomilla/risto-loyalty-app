@@ -3,6 +3,7 @@ import './App.css';
 import Wheel from './Wheel';
 import Login from './Login';
 import Wallet from './Wallet';
+import Leaderboard from './Leaderboard';
 
 const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
 
@@ -11,6 +12,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [isLoading, setIsLoading] = useState(true);
   const [rewards, setRewards] = useState([]);
+  const [leaderboardTrigger, setLeaderboardTrigger] = useState(0);
 
   useEffect(() => {
     const initApp = async () => {
@@ -95,6 +97,7 @@ function App() {
     } finally {
       // Sincronizza portafoglio e altri dati silenziosamente (senza loader a schermo intero)
       await fetchUserData(user.email, true);
+      setLeaderboardTrigger(prev => prev + 1);
     }
   };
 
@@ -195,6 +198,10 @@ function App() {
             </div>
           )}
 
+          {activeTab === 'classifica' && (
+             <Leaderboard currentUser={user} refreshTrigger={leaderboardTrigger} />
+          )}
+
           {activeTab === 'profilo' && (
             <div className="card-glass center-content">
                <div className="avatar" style={{width:'80px', height:'80px', fontSize:'2.5rem', marginBottom:'1rem'}}>{user.nome.charAt(0).toUpperCase()}</div>
@@ -231,6 +238,13 @@ function App() {
         >
           <span className="nav-icon">🏠</span>
           <span className="nav-label">Home</span>
+        </button>
+        <button 
+          className={`nav-item ${activeTab === 'classifica' ? 'active' : ''}`}
+          onClick={() => setActiveTab('classifica')}
+        >
+          <span className="nav-icon">🏆</span>
+          <span className="nav-label">Classifica</span>
         </button>
         <button 
           className={`nav-item center-nav-action ${activeTab === 'ruota' ? 'active' : ''}`}
