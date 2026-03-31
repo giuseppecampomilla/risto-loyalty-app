@@ -69,6 +69,32 @@ export default function Leaderboard({ currentUser, refreshTrigger }) {
           )}
         </div>
       )}
+
+      {/* Messaggio Obiettivo Successivo */}
+      {!isLoading && currentUser && leaders.length > 0 && (
+        <div className="leaderboard-goal card-glass" style={{ marginTop: '1.5rem', textAlign: 'center', padding: '1rem' }}>
+          {(() => {
+            const myIndex = leaders.findIndex(u => u.nome === currentUser.nome);
+            if (myIndex === 0) {
+              return <span style={{ color: '#fbbf24', fontWeight: 600 }}>Sei al primo posto assoluto! Continua così! 🥇</span>;
+            } else if (myIndex > 0) {
+              const nextPlayer = leaders[myIndex - 1];
+              const diff = nextPlayer.punti_totali - currentUser.punti_totali;
+              const needed = diff >= 0 ? diff + 1 : 1;
+              return <span>Ti mancano solo <strong style={{color: '#fbbf24'}}>{needed} punti</strong> per superare {nextPlayer.nome}! 🚀</span>;
+            } else {
+              if (leaders.length === 10) {
+                const tenthPlayer = leaders[9];
+                const diff = tenthPlayer.punti_totali - (currentUser.punti_totali || 0);
+                const needed = diff >= 0 ? diff + 1 : 1;
+                return <span>Ti mancano <strong style={{color: '#fbbf24'}}>{needed} punti</strong> per entrare in Top 10! 🔥</span>;
+              } else {
+                return <span>Continua a giocare per entrare in classifica! 💫</span>;
+              }
+            }
+          })()}
+        </div>
+      )}
     </div>
   );
 }
