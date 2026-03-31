@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Wheel from './Wheel';
 import Login from './Login';
