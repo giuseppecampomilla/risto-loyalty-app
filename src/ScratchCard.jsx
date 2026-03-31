@@ -27,11 +27,12 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Aggiungi un testo "GRATTA QUI"
-    ctx.font = 'bold 24px Inter, sans-serif';
+    ctx.font = 'bold 22px Inter, sans-serif';
     ctx.fillStyle = '#334155';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('GRATTA QUI', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Gratta qui', canvas.width / 2, canvas.height / 2 - 12);
+    ctx.fillText('per vincere!', canvas.width / 2, canvas.height / 2 + 16);
 
     let isDrawing = false;
 
