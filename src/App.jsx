@@ -26,8 +26,8 @@ function App() {
     initApp();
   }, []);
 
-  const fetchUserData = async (email) => {
-    setIsLoading(true);
+  const fetchUserData = async (email, silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/user-data/?email=${encodeURIComponent(email)}`);
       if (response.ok) {
@@ -45,7 +45,7 @@ function App() {
     } catch (e) {
       console.error('Errore sincronizzazione:', e);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -63,8 +63,11 @@ function App() {
   };
 
   const handleWheelWin = async (wonPoints, premio) => {
+    // Aggiornamento ottimistico: aumenta i punti subito per l'animazione
+    setUser(prev => ({ ...prev, punti: prev.punti + wonPoints }));
+    
     try {
-      setIsLoading(true);
+      // Background request to WordPress without blocking the UI
       const response = await fetch(`${API_BASE_URL}/process-win/`, {
         method: 'POST',
         headers: {
@@ -81,6 +84,7 @@ function App() {
         const data = await response.json();
         
         if (data.success) {
+          // Keep the true server sync value, which might differ slightly if there were other modifiers
           setUser(prev => ({ ...prev, punti: data.punti }));
         } else {
           console.error('❌ ERRORE Server:', data.message || data.code);
@@ -89,7 +93,8 @@ function App() {
     } catch (err) {
       console.error("❌ ERRORE FETCH:", err);
     } finally {
-      await fetchUserData(user.email);
+      // Sincronizza portafoglio e altri dati silenziosamente (senza loader a schermo intero)
+      await fetchUserData(user.email, true);
     }
   };
 
