@@ -121,6 +121,9 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
         setWinMessage('Hai comunque guadagnato 10 Punti Fedeltà per aver giocato!');
         if (onWin) onWin(10, null);
       } else {
+        if (window.confetti) {
+          window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        }
         setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
         if (onWin) onWin(10, wonPrizeStr);
       }
@@ -140,8 +143,8 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
         <>
           <div className="scratch-card-box">
             <div className="scratch-prize-reveal">
-              <span style={{ fontSize: '1.6rem', fontWeight: '800', color: '#fbbf24', textAlign: 'center' }}>
-                {prize === 'Riprova' ? 'Mancato!' : `🏆 ${prize}`}
+              <span className={prize === 'Riprova' ? '' : 'shimmer-text'} style={{ fontSize: '1.6rem', fontWeight: '800', textAlign: 'center' }}>
+                {prize === 'Riprova' ? <span style={{color: '#fbbf24'}}>Mancato!</span> : `🏆 ${prize}`}
               </span>
             </div>
             <canvas ref={canvasRef} width={300} height={150} className="scratch-canvas" />

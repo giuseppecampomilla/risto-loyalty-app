@@ -23,6 +23,27 @@
   padding: 10px;
 }
 
+@keyframes shimmerMove {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(150%) skewX(-20deg); }
+}
+
+.shimmer-text {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  color: #fbbf24;
+}
+
+.shimmer-text::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  animation: shimmerMove 2s infinite;
+}
+
 .scratch-canvas {
   position: absolute;
   top: 0; left: 0;
