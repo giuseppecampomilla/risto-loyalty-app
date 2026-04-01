@@ -52,6 +52,12 @@ export default function Wheel({ onWin, onGoToWallet }) {
           onWin(10, null);
         }
       } else {
+        if (window.confetti) {
+          window.confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+        }
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]);
+        }
         setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
         if (onWin) {
           onWin(10, wonPrizeStr);

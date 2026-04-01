@@ -99,6 +99,10 @@ export default function SlotMachine({ onWin, onGoToWallet }) {
         if (window.confetti && matches === 3) {
           window.confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
         }
+        // Attiva la vibrazione se supportata dal dispositivo
+        if (navigator.vibrate) {
+          navigator.vibrate(matches === 3 ? [200, 100, 200, 100, 200] : [100, 50, 100]);
+        }
         setWinMessage(`🎉 Combinazione vincente! Hai vinto: ${wonPrizeStr}! (+10 Punti inclusi)`);
         if (onWin) onWin(10, wonPrizeStr);
       }

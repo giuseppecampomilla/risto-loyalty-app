@@ -124,6 +124,9 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
         if (window.confetti) {
           window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         }
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
         setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
         if (onWin) onWin(10, wonPrizeStr);
       }
