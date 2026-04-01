@@ -5,20 +5,24 @@ const PRIZES = ['Caffè Omaggio', 'Sconto 10%', 'Amaro Omaggio', 'Riprova', 'Rip
 
 export default function ScratchCard({ onWin, onGoToWallet }) {
   const canvasRef = useRef(null);
+  const prizeRef = useRef('');
+  const isSubmittedRef = useRef(false);
+
   const [isScratched, setIsScratched] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [prize, setPrize] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [winMessage, setWinMessage] = useState('');
 
   useEffect(() => {
     const randomPrize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
+    prizeRef.current = randomPrize;
     setPrize(randomPrize);
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    // Riempi il canvas di grigio brillante
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, '#94a3b8');
     gradient.addColorStop(0.5, '#e2e8f0');
@@ -26,7 +30,6 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Aggiungi un testo "GRATTA QUI"
     ctx.font = 'bold 22px Inter, sans-serif';
     ctx.fillStyle = '#334155';
     ctx.textAlign = 'center';
@@ -44,9 +47,30 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
       checkCompletion();
     };
 
+    const checkCompletion = () => {
+      if (isSubmittedRef.current) return;
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let transparentPixels = 0;
+      for (let i = 3; i < imageData.data.length; i += 4) {
+        if (imageData.data[i] === 0) transparentPixels++;
+      }
+      const percent = (transparentPixels / (canvas.width * canvas.height)) * 100;
+      
+      // Se abbiamo superato la soglia e non abbiamo ancora inviato i dati
+      if (percent > 45 && !isSubmittedRef.current) {
+        isSubmittedRef.current = true;
+        setIsSubmitted(true);
+        setIsScratched(true);
+        removeListeners();
+        revealPrize(prizeRef.current);
+      }
+    };
+
     const handleStart = (e) => {
+      if (isSubmittedRef.current) return;
       isDrawing = true;
-      e.preventDefault(); // prevent scrolling
+      e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -54,7 +78,7 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
     };
 
     const handleMove = (e) => {
-      if (!isDrawing) return;
+      if (!isDrawing || isSubmittedRef.current) return;
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -64,16 +88,7 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
 
     const handleEnd = () => { isDrawing = false; };
 
-    canvas.addEventListener('mousedown', handleStart, {passive: false});
-    canvas.addEventListener('mousemove', handleMove, {passive: false});
-    canvas.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('mouseleave', handleEnd);
-    
-    canvas.addEventListener('touchstart', handleStart, {passive: false});
-    canvas.addEventListener('touchmove', handleMove, {passive: false});
-    canvas.addEventListener('touchend', handleEnd);
-
-    return () => {
+    const removeListeners = () => {
       canvas.removeEventListener('mousedown', handleStart);
       canvas.removeEventListener('mousemove', handleMove);
       canvas.removeEventListener('mouseup', handleEnd);
@@ -82,36 +97,32 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
       canvas.removeEventListener('touchmove', handleMove);
       canvas.removeEventListener('touchend', handleEnd);
     };
+
+    canvas.addEventListener('mousedown', handleStart, {passive: false});
+    canvas.addEventListener('mousemove', handleMove, {passive: false});
+    canvas.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('mouseleave', handleEnd);
+    canvas.addEventListener('touchstart', handleStart, {passive: false});
+    canvas.addEventListener('touchmove', handleMove, {passive: false});
+    canvas.addEventListener('touchend', handleEnd);
+
+    return removeListeners;
   }, []);
 
-  const checkCompletion = () => {
-    if (isScratched) return;
+  const revealPrize = (wonPrizeStr) => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let transparentPixels = 0;
-    for (let i = 3; i < imageData.data.length; i += 4) {
-      if (imageData.data[i] === 0) transparentPixels++;
+    if (canvas) {
+      canvas.style.transition = 'opacity 0.6s ease';
+      canvas.style.opacity = '0';
     }
-    const percent = (transparentPixels / (canvas.width * canvas.height)) * 100;
-    if (percent > 45) {
-      setIsScratched(true);
-      revealPrize();
-    }
-  };
-
-  const revealPrize = () => {
-    const canvas = canvasRef.current;
-    canvas.style.transition = 'opacity 0.6s ease';
-    canvas.style.opacity = '0';
     
     setTimeout(() => {
-      if (prize === 'Riprova') {
+      if (wonPrizeStr === 'Riprova') {
         setWinMessage('Hai comunque guadagnato 10 Punti Fedeltà per aver giocato!');
         if (onWin) onWin(10, null);
       } else {
-        setWinMessage(`🎉 Hai vinto: ${prize}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
-        if (onWin) onWin(10, prize);
+        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
+        if (onWin) onWin(10, wonPrizeStr);
       }
       setShowModal(true);
     }, 800);
@@ -119,15 +130,25 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
 
   return (
     <div className="game-container-wrapper scratch-wrapper center-content">
-      <div className="scratch-card-box">
-        <div className="scratch-prize-reveal">
-          <span style={{ fontSize: '1.6rem', fontWeight: '800', color: '#fbbf24', textAlign: 'center' }}>
-            {prize === 'Riprova' ? 'Mancato!' : `🏆 ${prize}`}
-          </span>
+      {isSubmitted ? (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+           <h3 style={{ color: '#4ade80', fontSize: '1.5rem', marginBottom: '1rem' }}>Vincita Registrata!</h3>
+           <p style={{ color: '#a1a1aa' }}>Hai già giocato a questo Gratta e Vinci. Torna alla Home per scegliere un altro gioco!</p>
+           <button className="btn-spin" style={{marginTop: '2rem'}} onClick={() => { if(onGoToWallet) onGoToWallet(); }}>Torna alla Home</button>
         </div>
-        <canvas ref={canvasRef} width={300} height={150} className="scratch-canvas" />
-      </div>
-      <p style={{ marginTop: '1.5rem', color: '#a1a1aa' }}>Strofina l'area grigia per scoprire se hai vinto!</p>
+      ) : (
+        <>
+          <div className="scratch-card-box">
+            <div className="scratch-prize-reveal">
+              <span style={{ fontSize: '1.6rem', fontWeight: '800', color: '#fbbf24', textAlign: 'center' }}>
+                {prize === 'Riprova' ? 'Mancato!' : `🏆 ${prize}`}
+              </span>
+            </div>
+            <canvas ref={canvasRef} width={300} height={150} className="scratch-canvas" />
+          </div>
+          <p style={{ marginTop: '1.5rem', color: '#a1a1aa' }}>Strofina l'area grigia per scoprire se hai vinto!</p>
+        </>
+      )}
 
       <div className={`modal-overlay ${showModal ? 'show' : ''}`}>
         <div className="modal-content">
