@@ -7,7 +7,7 @@ import Login from './Login';
 import Wallet from './Wallet';
 import Leaderboard from './Leaderboard';
 
-const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,9 +16,27 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [rewards, setRewards] = useState([]);
   const [leaderboardTrigger, setLeaderboardTrigger] = useState(0);
+  const [appSettings, setAppSettings] = useState(null);
+  const [isMaintenance, setIsMaintenance] = useState(false);
 
   useEffect(() => {
     const initApp = async () => {
+      try {
+        const settingsRes = await fetch(`${API_BASE_URL}/settings/`);
+        if (settingsRes.ok) {
+           const settingsData = await settingsRes.json();
+           setAppSettings(settingsData);
+        } else {
+           setIsMaintenance(true);
+           setIsLoading(false);
+           return;
+        }
+      } catch (err) {
+        setIsMaintenance(true);
+        setIsLoading(false);
+        return;
+      }
+
       const savedUser = localStorage.getItem('ristoLoyaltyUser');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
@@ -116,8 +134,20 @@ function App() {
     }
   };
 
+  if (isMaintenance) {
+    return (
+      <div className="loyalty-app center-content">
+        <div className="card-glass" style={{padding: '2rem'}}>
+          <div style={{fontSize:'3rem', marginBottom:'1rem'}}>🚧</div>
+          <h2>Manutenzione in corso</h2>
+          <p>L'app è momentaneamente disconnessa. Controlla la tua connessione o riprova più tardi.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user && !isLoading) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} signupBonus={appSettings?.signup_bonus || 150} />;
   }
 
   if (!user && isLoading) {
@@ -129,7 +159,7 @@ function App() {
     );
   }
 
-  const targetPoints = 500;
+  const targetPoints = appSettings?.milestones?.[1]?.points ? parseInt(appSettings.milestones[1].points) : 500;
   const progressPercent = Math.min((user.punti / targetPoints) * 100, 100);
 
   return (
@@ -175,16 +205,22 @@ function App() {
               <div className="card-glass center-content" style={{marginBottom: '2rem'}}>
                 <h2 className="section-title">Scegli il tuo gioco</h2>
                 <p className="section-subtitle">Vinci premi esclusivi o raccogli punti fedeltà in tempo reale.</p>
-                <div className="game-selection-grid">
-                  <button className="game-btn" onClick={() => { setActiveGame('wheel'); setActiveTab('ruota'); }}>
-                    <span className="game-icon">🎡</span> Ruota Fortunata
-                  </button>
-                  <button className="game-btn" onClick={() => { setActiveGame('scratch'); setActiveTab('ruota'); }}>
-                    <span className="game-icon">🎟️</span> Gratta e Vinci
-                  </button>
-                  <button className="game-btn" onClick={() => { setActiveGame('slot'); setActiveTab('ruota'); }}>
-                    <span className="game-icon">🎰</span> Slot Machine
-                  </button>
+                <div className={`game-selection-grid ${(appSettings?.game_type !== 'all' && appSettings?.game_type) ? 'single-game' : ''}`}>
+                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'ruota_fortuna') && (
+                    <button className="game-btn" onClick={() => { setActiveGame('wheel'); setActiveTab('ruota'); }}>
+                      <span className="game-icon">🎡</span> Ruota Fortunata
+                    </button>
+                  )}
+                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'gratta_e_vinci') && (
+                    <button className="game-btn" onClick={() => { setActiveGame('scratch'); setActiveTab('ruota'); }}>
+                      <span className="game-icon">🎟️</span> Gratta e Vinci
+                    </button>
+                  )}
+                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'slot_machine') && (
+                    <button className="game-btn" onClick={() => { setActiveGame('slot'); setActiveTab('ruota'); }}>
+                      <span className="game-icon">🎰</span> Slot Machine
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -197,6 +233,7 @@ function App() {
                {activeGame === 'wheel' && (
                  <Wheel 
                    onWin={handleWheelWin} 
+                   settings={appSettings}
                    onGoToWallet={() => {
                      setActiveTab('home');
                      setTimeout(() => {
@@ -209,6 +246,7 @@ function App() {
                {activeGame === 'scratch' && (
                  <ScratchCard 
                    onWin={handleWheelWin} 
+                   settings={appSettings}
                    onGoToWallet={() => {
                      setActiveTab('home');
                      setTimeout(() => {
@@ -221,6 +259,7 @@ function App() {
                {activeGame === 'slot' && (
                  <SlotMachine 
                    onWin={handleWheelWin} 
+                   settings={appSettings}
                    onGoToWallet={() => {
                      setActiveTab('home');
                      setTimeout(() => {

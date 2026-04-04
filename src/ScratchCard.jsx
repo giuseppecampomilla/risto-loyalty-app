@@ -3,7 +3,8 @@ import './Games.css';
 
 const PRIZES = ['Caffè Omaggio', 'Sconto 10%', 'Amaro Omaggio', 'Riprova', 'Riprova', 'Sconto 10%', 'Caffè Omaggio'];
 
-export default function ScratchCard({ onWin, onGoToWallet }) {
+export default function ScratchCard({ onWin, onGoToWallet, settings }) {
+  const basePoints = settings?.points_per_play || 10;
   const canvasRef = useRef(null);
   const prizeRef = useRef('');
   const isSubmittedRef = useRef(false);
@@ -118,8 +119,8 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
     
     setTimeout(() => {
       if (wonPrizeStr === 'Riprova') {
-        setWinMessage('Hai comunque guadagnato 10 Punti Fedeltà per aver giocato!');
-        if (onWin) onWin(10, null);
+        setWinMessage(`Hai comunque guadagnato ${basePoints} Punti Fedeltà per aver giocato!`);
+        if (onWin) onWin(basePoints, null);
       } else {
         if (window.confetti) {
           window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -127,8 +128,8 @@ export default function ScratchCard({ onWin, onGoToWallet }) {
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
         }
-        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
-        if (onWin) onWin(10, wonPrizeStr);
+        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+${basePoints} Punti Fedeltà inclusi)`);
+        if (onWin) onWin(basePoints, wonPrizeStr);
       }
       setShowModal(true);
     }, 800);

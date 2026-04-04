@@ -14,7 +14,8 @@ const PRIZES = [
 
 
 
-export default function Wheel({ onWin, onGoToWallet }) {
+export default function Wheel({ onWin, onGoToWallet, settings }) {
+  const basePoints = settings?.points_per_play || 10;
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -47,9 +48,9 @@ export default function Wheel({ onWin, onGoToWallet }) {
       const wonPrizeStr = PRIZES[prizeIndex];
       setWonPrize(wonPrizeStr);
       if (wonPrizeStr === 'Riprova') {
-        setWinMessage('Hai comunque guadagnato 10 Punti Fedeltà per aver giocato!');
+        setWinMessage(`Hai comunque guadagnato ${basePoints} Punti Fedeltà per aver giocato!`);
         if (onWin) {
-          onWin(10, null);
+          onWin(basePoints, null);
         }
       } else {
         if (window.confetti) {
@@ -58,9 +59,9 @@ export default function Wheel({ onWin, onGoToWallet }) {
         if (navigator.vibrate) {
           navigator.vibrate([200, 100, 200]);
         }
-        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+10 Punti Fedeltà inclusi)`);
+        setWinMessage(`🎉 Hai vinto: ${wonPrizeStr}! Aggiunto al tuo Wallet! (+${basePoints} Punti Fedeltà inclusi)`);
         if (onWin) {
-          onWin(10, wonPrizeStr);
+          onWin(basePoints, wonPrizeStr);
         }
       }
       setShowModal(true);

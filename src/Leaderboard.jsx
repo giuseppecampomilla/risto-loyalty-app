@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Leaderboard({ currentUser, refreshTrigger }) {
   const [leaders, setLeaders] = useState([]);

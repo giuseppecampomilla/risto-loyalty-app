@@ -4,7 +4,8 @@ import './Games.css';
 const SYMBOLS = ['🍕', '🍷', '🍺', '🍝', '🍰'];
 const REEL_HEIGHT = 100; // Altezza di ogni simbolo in px
 
-export default function SlotMachine({ onWin, onGoToWallet }) {
+export default function SlotMachine({ onWin, onGoToWallet, settings }) {
+  const basePoints = settings?.points_per_play || 10;
   const getRandomSymbol = () => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 
   const [reelsConfig, setReelsConfig] = useState([
@@ -85,8 +86,8 @@ export default function SlotMachine({ onWin, onGoToWallet }) {
     setIsSpinning(false);
     
     if (wonPrizeStr === 'Riprova') {
-      setWinMessage('Nessuna combinazione. Hai guadagnato 10 Punti Fedeltà per la tua giocata!');
-      if (onWin) onWin(10, null);
+      setWinMessage(`Nessuna combinazione. Hai guadagnato ${basePoints} Punti Fedeltà per la tua giocata!`);
+      if (onWin) onWin(basePoints, null);
     } else {
       if (window.confetti && matches === 3) {
         window.confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
@@ -94,8 +95,8 @@ export default function SlotMachine({ onWin, onGoToWallet }) {
       if (navigator.vibrate) {
         navigator.vibrate(matches === 3 ? [200, 100, 200, 100, 200] : [100, 50, 100]);
       }
-      setWinMessage(`🎉 Combinazione vincente! Hai vinto: ${wonPrizeStr}! (+10 Punti inclusi)`);
-      if (onWin) onWin(10, wonPrizeStr);
+      setWinMessage(`🎉 Combinazione vincente! Hai vinto: ${wonPrizeStr}! (+${basePoints} Punti inclusi)`);
+      if (onWin) onWin(basePoints, wonPrizeStr);
     }
     
     setShowModal(true);

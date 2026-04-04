@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const API_BASE_URL = 'https://soundframes.netsons.org/wp-json/loyalty/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Wallet({ email, rewards, onRedeemSuccess }) {
   const [selectedReward, setSelectedReward] = useState(null);
