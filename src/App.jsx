@@ -134,6 +134,45 @@ function App() {
     }
   };
 
+  const canUserPlay = () => {
+    if (!user || !appSettings) return true;
+    
+    const maxPlays = appSettings.max_plays || 1;
+    const playPeriod = appSettings.play_period || 24;
+    const periodUnit = appSettings.play_period_unit || 'hours';
+    const periodMs = (periodUnit === 'days' ? playPeriod * 24 : playPeriod) * 60 * 60 * 1000;
+
+    if (!user.period_start) return true;
+
+    const startTime = new Date(user.period_start).getTime();
+    const now = new Date().getTime();
+    
+    if (now - startTime >= periodMs) return true;
+    
+    return user.play_count < maxPlays;
+  };
+
+  const getRemainingTimeMsg = () => {
+    if (!user || !appSettings || !user.period_start) return "";
+    
+    const playPeriod = appSettings.play_period || 24;
+    const periodUnit = appSettings.play_period_unit || 'hours';
+    const periodMs = (periodUnit === 'days' ? playPeriod * 24 : playPeriod) * 60 * 60 * 1000;
+    
+    const startTime = new Date(user.period_start).getTime();
+    const now = new Date().getTime();
+    const nextPlayTime = startTime + periodMs;
+    const remainingMs = nextPlayTime - now;
+    
+    if (remainingMs <= 0) return "";
+    
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) return `Riprova tra ${hours}h e ${minutes}m`;
+    return `Riprova tra ${minutes} minuti`;
+  };
+
   if (isMaintenance) {
     return (
       <div className="loyalty-app center-content">
@@ -206,20 +245,29 @@ function App() {
                 <h2 className="section-title">Scegli il tuo gioco</h2>
                 <p className="section-subtitle">Vinci premi esclusivi o raccogli punti fedeltà in tempo reale.</p>
                 <div className={`game-selection-grid ${(appSettings?.game_type !== 'all' && appSettings?.game_type) ? 'single-game' : ''}`}>
-                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'ruota_fortuna') && (
-                    <button className="game-btn" onClick={() => { setActiveGame('wheel'); setActiveTab('ruota'); }}>
-                      <span className="game-icon">🎡</span> Ruota Fortunata
-                    </button>
-                  )}
-                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'gratta_e_vinci') && (
-                    <button className="game-btn" onClick={() => { setActiveGame('scratch'); setActiveTab('ruota'); }}>
-                      <span className="game-icon">🎟️</span> Gratta e Vinci
-                    </button>
-                  )}
-                  {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'slot_machine') && (
-                    <button className="game-btn" onClick={() => { setActiveGame('slot'); setActiveTab('ruota'); }}>
-                      <span className="game-icon">🎰</span> Slot Machine
-                    </button>
+                  {!canUserPlay() ? (
+                    <div className="limit-reached-msg card-glass" style={{ gridColumn: '1 / -1', padding: '1.5rem', border: '1px solid #dc2626' }}>
+                      <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>⏳ Limite raggiunto</span>
+                      <p>Hai esaurito le giocate per questo periodo. {getRemainingTimeMsg()}</p>
+                    </div>
+                  ) : (
+                    <>
+                      {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'ruota_fortuna') && (
+                        <button className="game-btn" onClick={() => { setActiveGame('wheel'); setActiveTab('ruota'); }}>
+                          <span className="game-icon">🎡</span> Ruota Fortunata
+                        </button>
+                      )}
+                      {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'gratta_e_vinci') && (
+                        <button className="game-btn" onClick={() => { setActiveGame('scratch'); setActiveTab('ruota'); }}>
+                          <span className="game-icon">🎟️</span> Gratta e Vinci
+                        </button>
+                      )}
+                      {(appSettings?.game_type === 'all' || !appSettings?.game_type || appSettings?.game_type === 'slot_machine') && (
+                        <button className="game-btn" onClick={() => { setActiveGame('slot'); setActiveTab('ruota'); }}>
+                          <span className="game-icon">🎰</span> Slot Machine
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

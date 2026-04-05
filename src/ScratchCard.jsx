@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Games.css';
 
-const PRIZES = ['Caffè Omaggio', 'Sconto 10%', 'Amaro Omaggio', 'Riprova', 'Riprova', 'Sconto 10%', 'Caffè Omaggio'];
-
 export default function ScratchCard({ onWin, onGoToWallet, settings }) {
   const basePoints = settings?.points_per_play || 10;
   const canvasRef = useRef(null);
@@ -16,9 +14,20 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
   const [winMessage, setWinMessage] = useState('');
 
   useEffect(() => {
-    const randomPrize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
-    prizeRef.current = randomPrize;
-    setPrize(randomPrize);
+    // DETERMINE PRIZE BASED ON WIN CHANCE
+    const winChance = settings?.win_chance || 20;
+    const isWinner = Math.floor(Math.random() * 100) < winChance;
+    
+    let finalPrize = 'Ritenta';
+    if (isWinner) {
+        const backendPrizes = settings?.prizes?.filter(p => p && p.trim() !== '') || [];
+        if (backendPrizes.length > 0) {
+            finalPrize = backendPrizes[Math.floor(Math.random() * backendPrizes.length)];
+        }
+    }
+
+    prizeRef.current = finalPrize;
+    setPrize(finalPrize);
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -108,7 +117,7 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
     canvas.addEventListener('touchend', handleEnd);
 
     return removeListeners;
-  }, []);
+  }, [settings]);
 
   const revealPrize = (wonPrizeStr) => {
     const canvas = canvasRef.current;
@@ -118,7 +127,7 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
     }
     
     setTimeout(() => {
-      if (wonPrizeStr === 'Riprova') {
+      if (wonPrizeStr === 'Ritenta') {
         setWinMessage(`Hai comunque guadagnato ${basePoints} Punti Fedeltà per aver giocato!`);
         if (onWin) onWin(basePoints, null);
       } else {
@@ -147,8 +156,8 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
         <>
           <div className="scratch-card-box">
             <div className="scratch-prize-reveal">
-              <span className={prize === 'Riprova' ? '' : 'shimmer-text'} style={{ fontSize: '1.6rem', fontWeight: '800', textAlign: 'center' }}>
-                {prize === 'Riprova' ? <span style={{color: '#fbbf24'}}>Mancato!</span> : `🏆 ${prize}`}
+              <span className={prize === 'Ritenta' ? '' : 'shimmer-text'} style={{ fontSize: '1.6rem', fontWeight: '800', textAlign: 'center' }}>
+                {prize === 'Ritenta' ? <span style={{color: '#fbbf24'}}>Mancato!</span> : `🏆 ${prize}`}
               </span>
             </div>
             <canvas ref={canvasRef} width={300} height={150} className="scratch-canvas" />
@@ -159,10 +168,10 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
 
       <div className={`modal-overlay ${showModal ? 'show' : ''}`}>
         <div className="modal-content">
-          <div className="modal-title">{prize === 'Riprova' ? 'Peccato!' : 'Vittoria!'}</div>
+          <div className="modal-title">{prize === 'Ritenta' ? 'Peccato!' : 'Vittoria!'}</div>
           <div className="modal-body">{winMessage}</div>
           
-          {prize === 'Riprova' ? (
+          {prize === 'Ritenta' ? (
             <button className="modal-btn close-only" onClick={() => setShowModal(false)}>Chiudi</button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -175,3 +184,4 @@ export default function ScratchCard({ onWin, onGoToWallet, settings }) {
     </div>
   );
 }
+
